@@ -41,19 +41,36 @@ public class RestaurantController {
         return new ResponseEntity<>(restaurant, HttpStatus.OK);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<Restaurant> findrestaurantbyId(@RequestHeader("Authorization") String jwt,
-                                                               @PathVariable Long id
+    public ResponseEntity<Restaurant> findRestaurantById(
+            @RequestHeader("Authorization") String jwt,
+            @PathVariable Long id) throws Exception {
 
-    ) throws Exception{
+        // Validate user
         User user = userService.findUserByJwtToken(jwt);
-        Restaurant restaurant=restaurantService.findRestaurantById(id);
-        return new ResponseEntity<>(restaurant, HttpStatus.OK);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        // Find restaurant
+        Restaurant restaurant = restaurantService.findRestaurantById(id);
+        if (restaurant == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        // Optional: permission check
+        // if (!restaurant.getOwner().getId().equals(user.getId())) {
+        //     return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        // }
+
+        return ResponseEntity.ok(restaurant);
     }
-    @PutMapping("/{id}/add-favorites")
+
+    @PutMapping("/{id}/add-favorite")
     public ResponseEntity<RestaurantDto> addToFavorites(@RequestHeader("Authorization") String jwt,
                                                          @PathVariable Long id
 
     ) throws Exception{
+
         User user = userService.findUserByJwtToken(jwt);
         RestaurantDto restaurantdto=restaurantService.addToFavorites(id,user);
         return new ResponseEntity<>(restaurantdto, HttpStatus.OK);

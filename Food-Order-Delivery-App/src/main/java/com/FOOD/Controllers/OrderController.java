@@ -23,7 +23,7 @@ public class OrderController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/order")
+    @PostMapping("/order/ap")
     public ResponseEntity<Order> createOrder(@RequestBody OrderReq req,
                                                    @RequestHeader("Authorization")String token) throws Exception {
         User user =userService.findUserByJwtToken(token);

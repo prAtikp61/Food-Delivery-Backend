@@ -1,5 +1,6 @@
 package com.FOOD.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,10 +20,24 @@ public class orderItem {
     @ManyToOne
     private Food food;
 
-    private int quantity ;
+    private int quantity;
     private Long totalPrice;
 
     private List<String> ingredients;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
 
     public Long getId() {
         return id;

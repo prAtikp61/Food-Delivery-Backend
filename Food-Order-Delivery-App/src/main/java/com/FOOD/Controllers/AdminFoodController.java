@@ -31,6 +31,14 @@ public class AdminFoodController {
     public ResponseEntity<Food> createFood(@RequestBody createFoodRequest req ,
                                            @RequestHeader("Authorization")String jwt
                                            ) throws Exception {
+        System.out.println("=== DEBUG INFO ===");
+        System.out.println("Request object: " + req);
+        System.out.println("Name: " + req.getName());
+        System.out.println("Description: " + req.getDescription());
+        System.out.println("Price: " + req.getPrice());
+        System.out.println("RestaurantId: " + req.getRestaurantId());
+        System.out.println("Category: " + req.getCategory());
+        System.out.println("==================");
         User user = userService.findUserByJwtToken(jwt);
         Restaurant restaurant= restaurantService.findRestaurantById(req.getRestaurantId());
         Food food= foodService.createFood(req,req.getCategory(),restaurant);

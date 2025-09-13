@@ -2,6 +2,7 @@ package com.FOOD.Request;
 
 import com.FOOD.Models.Category;
 import com.FOOD.Models.IngredientsList;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ public class createFoodRequest {
     private Long price;
     private Category category;
     private List<String> images;
+    @JsonProperty("RestaurantId")
     private Long RestaurantId;
     private boolean vegetarian;
     public boolean seasonal;

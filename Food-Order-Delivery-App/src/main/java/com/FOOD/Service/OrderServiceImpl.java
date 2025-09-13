@@ -37,45 +37,67 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrder(OrderReq req, User user) throws Exception {
+        System.out.println("Delivery address: " + req.getDeliveryAdd());
+
+        if (req.getDeliveryAdd() == null) {
+            throw new Exception("Delivery address cannot be null");
+        }
 
         Addresses shippingAddress = req.getDeliveryAdd();
-        Addresses save_add=repo1.save(shippingAddress);
-        if(!user.getAddressess().contains(save_add)){
-            user.getAddressess().add(save_add);
+        Addresses savedAddress = repo1.save(shippingAddress);
+
+        if (!user.getAddressess().contains(savedAddress)) {
+            user.getAddressess().add(savedAddress);
             userRepo.save(user);
         }
-        Restaurant restaurant=restaurantService.findRestaurantById(req.getRestaurantId());
-        Order createdOrder=new Order();
+
+        Restaurant restaurant = restaurantService.findRestaurantById(req.getRestaurantId());
+        if (restaurant == null) {
+            throw new Exception("Restaurant not found");
+        }
+
+        Order createdOrder = new Order();
         createdOrder.setCustomer(user);
         createdOrder.setCreatedAt(new Date());
         createdOrder.setOrderStatus("PENDING");
         createdOrder.setRestaurant(restaurant);
-        createdOrder.setDeliveryAddress(save_add);
+        createdOrder.setDeliveryAddress(savedAddress);
 
-        Cart cart=cartService.findCartByUserId(user.getId());
-
-
-        List<orderItem> orderItems=new ArrayList<>();
-
-        for(cartItems cartItems:cart.getCartItems()){
-            orderItem orderItem=new orderItem();
-            orderItem.setFood(cartItems.getFood());
-            orderItem.setQuantity(cartItems.getQuantity());
-            orderItem.setIngredients(cartItems.getIngredients());
-            orderItem.setTotalPrice(cartItems.getTotalPrice());
-
-            orderItem savedOrderItems=orderItemRepo.save(orderItem);
-            orderItems.add(savedOrderItems);
+        Cart cart = cartService.findCartByUserId(user.getId());
+        if (cart == null || cart.getCartItems().isEmpty()) {
+            throw new Exception("Cart is empty. Cannot create order.");
         }
-        Long totalPrice=cartService.calculateCartTotal(cart);
+
+        List<orderItem> orderItems = new ArrayList<>();
+        for (cartItems ci : cart.getCartItems()) {
+            orderItem orderItem = new orderItem();
+            orderItem.setFood(ci.getFood());
+            orderItem.setQuantity(ci.getQuantity());
+            orderItem.setIngredients(ci.getIngredients());
+            orderItem.setTotalPrice(ci.getTotalPrice());
+
+            // IMPORTANT: set relation
+            orderItem.setOrder(createdOrder);
+
+            orderItem savedOrderItem = orderItemRepo.save(orderItem);
+            orderItems.add(savedOrderItem);
+        }
+
+        Long totalPrice = cartService.calculateCartTotal(cart);
         createdOrder.setItems(orderItems);
         createdOrder.setTotalPrice(totalPrice);
 
-        Order savedOrder=orderRepo.save(createdOrder);
+        Order savedOrder = orderRepo.save(createdOrder);
+
+        // ensure restaurant orders list is initialized
+        if (restaurant.getOrders() == null) {
+            restaurant.setOrders(new ArrayList<>());
+        }
         restaurant.getOrders().add(savedOrder);
 
-        return createdOrder;
+        return savedOrder;
     }
+
 
     @Override
     public Order updateOrder(Long orderId, String status) throws Exception {

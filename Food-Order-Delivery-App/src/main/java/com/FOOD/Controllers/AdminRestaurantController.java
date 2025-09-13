@@ -27,6 +27,7 @@ public class AdminRestaurantController {
     public ResponseEntity<Restaurant> addRestaurant(@RequestBody createRestaurantRequest req,
                                                     @RequestHeader("Authorization") String jwt
     ) throws Exception{
+        System.out.println("take this->"+jwt);
         User user = userService.findUserByJwtToken(jwt);
         Restaurant restaurant=restaurantService.createRestaurant(req,user);
         return new ResponseEntity<>(restaurant, HttpStatus.CREATED);
@@ -37,6 +38,7 @@ public class AdminRestaurantController {
                                                     @RequestHeader("Authorization") String jwt,
                                                        @PathVariable Long id
     ) throws Exception{
+
         User user = userService.findUserByJwtToken(jwt);
         Restaurant restaurant=restaurantService.updateRestaurant(id,req);
         return new ResponseEntity<>(restaurant, HttpStatus.CREATED);
